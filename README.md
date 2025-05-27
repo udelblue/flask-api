@@ -34,3 +34,9 @@ flask run
 
 flask --app ./app.py run
 ```
+
+
+
+## API Document
+
+go to http://127.0.0.1:5000/openapi
