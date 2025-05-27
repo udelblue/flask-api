@@ -1,9 +1,13 @@
-from flask import Flask, Response, request, render_template
-import json
 from pydantic import BaseModel
 
+from flask_openapi3 import Info, Tag
+from flask_openapi3 import OpenAPI
 
-app = Flask(__name__)
+info = Info(title="todo API", version="1.0.0")
+app = OpenAPI(__name__, info=info)
+
+todos_tag = Tag(name="todos", description="todos")
+
 
 class Todo(BaseModel):
     id: int
@@ -26,12 +30,15 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/api/todos", methods=["GET"])
+
+
+
+@app.get("/api/todos", summary="get books", tags=[todos_tag])
 def api_todos():
 
     return Response(response=json.dumps(todos), status=200, mimetype="application/json")
  
-@app.route("/api/todos", methods=["POST"])
+@app.post("/api/todos", summary="post books", tags=[todos_tag])
 def api_add_todo():
     data = request.get_json()
     todo = Todo(**data)
@@ -39,8 +46,12 @@ def api_add_todo():
     todos.append(new_todo)
     return Response(response=json.dumps(new_todo), status=201, mimetype="application/json")
 
-@app.route("/api/todos/<int:todo_id>", methods=["DELETE"])
+
+@app.delete("/api/todos/<int:todo_id>", summary="delete books", tags=[todos_tag])
 def api_delete_todo(todo_id):
     global todos
     todos = [todo for todo in todos if todo["id"] != todo_id]
     return Response(status=204)
+
+if __name__ == "__main__":
+    app.run(debug=True)

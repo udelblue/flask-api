@@ -27,12 +27,10 @@ $ source myvenv/bin/activate
 ## Run 
 
 ```bash
-set FLASK_APP=newproj
-set FLASK_ENV=development
+set FLASK_APP=.app.py
 flask run
 
-or 
 
 
-flask --app app_name run
+flask --app ./app.py run
 ```
