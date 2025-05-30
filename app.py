@@ -21,13 +21,15 @@ Base = declarative_base()
 
 
 # sqlalchemy models
-class TodoModel(Base):
+class Todo(Base):
     __tablename__ = "todos"  # Table name
 
     id = Column(Integer, primary_key=True, index=True)
     owner = Column(String, index=True)
     task = Column(String)
+    priority = Column(Integer, default=0)  # Default priority is 
     completed = Column(Integer, default=0)  # 0 for not completed, 1 for complete
+    due_date = Column(String, nullable=True)  # Optional due date
 
     def __repr__(self):
         return f"<Task(id={self.id}, owner='{self.owner}', task='{self.task}', completed={self.completed})>"
@@ -41,15 +43,13 @@ db = SessionLocal()
 
 
 
-class Todo(BaseModel):
+class TodoSchema(BaseModel):
     id: int
     task: str
+    priority: int = 0
+    completed: int = 0
+    due_date: str | None = None
 
-todos = [
-    {"id": 1, "task": "Learn Flask"},
-    {"id": 2, "task": "Build a web app"},
-    {"id": 3, "task": "Deploy to production"}
-]
 
 
 # UI Endpoints
