@@ -3,9 +3,11 @@ from flask import Flask, Response, request, render_template, jsonify
 import json
 from flask_openapi3 import Info, Tag # type: ignore
 from flask_openapi3 import OpenAPI # type: ignore
+from flask_openapi3 import APIBlueprint # type: ignore
 
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
+
 
 
 # API Setup
@@ -51,7 +53,6 @@ class TodoSchema(BaseModel):
     due_date: str | None = None
 
 
-
 # UI Endpoints
 
 @app.route("/")
@@ -63,27 +64,104 @@ def home():
 def about():
     return render_template("about.html")
 
-# API Endpoints
-
-@app.get("/api/todos", summary="get books", tags=[todos_tag])
-def api_todos():
-
-    return Response(response=json.dumps(todos), status=200, mimetype="application/json")
- 
-@app.post("/api/todos", summary="post books", tags=[todos_tag])
-def api_add_todo():
-    data = request.get_json()
-    todo = Todo(**data)
-    new_todo = {"id": len(todos) + 1, "task": todo.task}
-    todos.append(new_todo)
-    return Response(response=json.dumps(new_todo), status=201, mimetype="application/json")
+# API todos Endpoints
 
 
-@app.delete("/api/todos/<int:todo_id>", summary="delete books", tags=[todos_tag])
-def api_delete_todo(todo_id):
-    global todos
-    todos = [todo for todo in todos if todo["id"] != todo_id]
-    return Response(status=204)
+todos_api = APIBlueprint('todos', __name__, url_prefix='/api/todos', abp_tags=[todos_tag])
 
+@todos_api.get('/')
+def get_todos():
+    todos = db.query(Todo).all()
+    return jsonify([TodoSchema(
+        id=todo.id,
+        task=todo.task,
+        priority=todo.priority,
+        completed=todo.completed,
+        due_date=todo.due_date
+    ).dict() for todo in todos])
+
+@todos_api.get('/<int:todo_id>')
+def get_todo_by_id(todo_id):
+    todo = db.query(Todo).filter(Todo.id == todo_id).first()
+    if not todo:
+        return jsonify({"error": "Todo not found"}), 404
+    return jsonify(TodoSchema(
+        id=todo.id,
+        task=todo.task,
+        priority=todo.priority,
+        completed=todo.completed,
+        due_date=todo.due_date
+    ).dict())
+
+@todos_api.post('/')
+def create_todo():
+    data = request.json
+    todo_data = TodoSchema(**data)
+    todo = Todo(
+        id=todo_data.id,
+        task=todo_data.task,
+        priority=todo_data.priority,
+        completed=todo_data.completed,
+        due_date=todo_data.due_date,
+        owner="default"
+    )
+    db.add(todo)
+    db.commit()
+    db.refresh(todo)
+    return jsonify(TodoSchema(
+        id=todo.id,
+        task=todo.task,
+        priority=todo.priority,
+        completed=todo.completed,
+        due_date=todo.due_date
+    ).dict()), 201
+
+@todos_api.put('/<int:todo_id>')
+def update_todo(todo_id):
+    data = request.json
+    todo = db.query(Todo).filter(Todo.id == todo_id).first()
+    if not todo:
+        return jsonify({"error": "Todo not found"}), 404
+    todo_data = TodoSchema(id=todo.id, **data)
+    todo.task = todo_data.task
+    todo.priority = todo_data.priority
+    todo.completed = todo_data.completed
+    todo.due_date = todo_data.due_date
+    db.commit()
+    db.refresh(todo)
+    return jsonify(TodoSchema(
+        id=todo.id,
+        task=todo.task,
+        priority=todo.priority,
+        completed=todo.completed,
+        due_date=todo.due_date
+    ).dict())
+
+@todos_api.delete('/<int:todo_id>')
+def delete_todo(todo_id):
+    todo = db.query(Todo).filter(Todo.id == todo_id).first()
+    if not todo:
+        return jsonify({"error": "Todo not found"}), 404
+    db.delete(todo)
+    db.commit()
+    return jsonify({"message": "Todo deleted"})
+
+
+
+app.register_api(todos_api)
+
+
+
+# Health Check Endpoint
+health_api = APIBlueprint('health', __name__, url_prefix='/api/health')
+@health_api.get('/')
+def health_check():
+    """Health check endpoint"""
+    return jsonify({"status": "healthy"}), 200
+app.register_api(health_api)
+
+
+
+# Entry point for the application
 if __name__ == "__main__":
     app.run(debug=True)
