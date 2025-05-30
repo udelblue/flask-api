@@ -1,3 +1,9 @@
+# Flask API
+
+Basic flask api with endpoints for the API and UI. 
+
+
+
 ## Virtual environment
 
 ### Windows venv activation
