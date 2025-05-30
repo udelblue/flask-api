@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from flask import Flask, Response, request, render_template, jsonify
 import json
-from flask_openapi3 import Info, Tag
-from flask_openapi3 import OpenAPI
+from flask_openapi3 import Info, Tag # type: ignore
+from flask_openapi3 import OpenAPI # type: ignore
 
 
 
@@ -23,6 +23,8 @@ todos = [
 ]
 
 
+# UI Endpoints
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -32,7 +34,7 @@ def home():
 def about():
     return render_template("about.html")
 
-
+# API Endpoints
 
 @app.get("/api/todos", summary="get books", tags=[todos_tag])
 def api_todos():
