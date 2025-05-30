@@ -35,6 +35,17 @@ flask run
 flask --app ./app.py run
 ```
 
+## Run in dev mode 
+
+```bash
+set FLASK_APP=.app.py
+flask run --reload
+
+
+
+flask --app ./app.py run --reload
+```
+
 
 
 ## API Document

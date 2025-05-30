@@ -1,7 +1,10 @@
 from pydantic import BaseModel
-
+from flask import Flask, Response, request, render_template, jsonify
+import json
 from flask_openapi3 import Info, Tag
 from flask_openapi3 import OpenAPI
+
+
 
 info = Info(title="todo API", version="1.0.0")
 app = OpenAPI(__name__, info=info)
@@ -28,8 +31,6 @@ def home():
 @app.route("/about")
 def about():
     return render_template("about.html")
-
-
 
 
 
