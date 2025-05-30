@@ -4,12 +4,41 @@ import json
 from flask_openapi3 import Info, Tag # type: ignore
 from flask_openapi3 import OpenAPI # type: ignore
 
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 
 
+# API Setup
 info = Info(title="todo API", version="1.0.0")
 app = OpenAPI(__name__, info=info)
-
 todos_tag = Tag(name="todos", description="todos")
+
+# SQLAlchemy
+# database connection URL (using SQLite in-memory database for simplicity)
+DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(DATABASE_URL, echo=True) # echo=True logs SQL queries
+Base = declarative_base()
+
+
+# sqlalchemy models
+class TodoModel(Base):
+    __tablename__ = "todos"  # Table name
+
+    id = Column(Integer, primary_key=True, index=True)
+    owner = Column(String, index=True)
+    task = Column(String)
+    completed = Column(Integer, default=0)  # 0 for not completed, 1 for complete
+
+    def __repr__(self):
+        return f"<Task(id={self.id}, owner='{self.owner}', task='{self.task}', completed={self.completed})>"
+
+# Create the database tables (if they don't exist)
+Base.metadata.create_all(bind=engine)
+# Create a SessionLocal class to create database sessions
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# session to interact with the database
+db = SessionLocal()
+
 
 
 class Todo(BaseModel):
