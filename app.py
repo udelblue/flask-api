@@ -73,11 +73,11 @@ todos_api = APIBlueprint('todos', __name__, url_prefix='/api/todos', abp_tags=[t
 def get_todos():
     todos = db.query(Todo).all()
     return jsonify([TodoSchema(
-        id=todo.id,
-        task=todo.task,
-        priority=todo.priority,
-        completed=todo.completed,
-        due_date=todo.due_date
+        id=getattr(todo, "id"),
+        task=str(getattr(todo, "task")),
+        priority=getattr(todo, "priority"),
+        completed=getattr(todo, "completed"),
+        due_date=str(getattr(todo, "due_date"))
     ).dict() for todo in todos])
 
 @todos_api.get('/<int:todo_id>')
@@ -86,11 +86,11 @@ def get_todo_by_id(todo_id):
     if not todo:
         return jsonify({"error": "Todo not found"}), 404
     return jsonify(TodoSchema(
-        id=todo.id,
-        task=todo.task,
-        priority=todo.priority,
-        completed=todo.completed,
-        due_date=todo.due_date
+        id=getattr(todo, "id"),
+        task=str(getattr(todo, "task")),
+        priority=getattr(todo, "priority"),
+        completed=getattr(todo, "completed"),
+        due_date=str(getattr(todo, "due_date"))
     ).dict())
 
 @todos_api.post('/')
@@ -109,11 +109,11 @@ def create_todo():
     db.commit()
     db.refresh(todo)
     return jsonify(TodoSchema(
-        id=todo.id,
-        task=todo.task,
-        priority=todo.priority,
-        completed=todo.completed,
-        due_date=todo.due_date
+        id=getattr(todo, "id"),
+        task=str(getattr(todo, "task")),
+        priority=getattr(todo, "priority"),
+        completed=getattr(todo, "completed"),
+        due_date=str(getattr(todo, "due_date"))
     ).dict()), 201
 
 @todos_api.put('/<int:todo_id>')
@@ -130,11 +130,11 @@ def update_todo(todo_id):
     db.commit()
     db.refresh(todo)
     return jsonify(TodoSchema(
-        id=todo.id,
-        task=todo.task,
-        priority=todo.priority,
-        completed=todo.completed,
-        due_date=todo.due_date
+        id=getattr(todo, "id"),
+        task=str(getattr(todo, "task")),
+        priority=getattr(todo, "priority"),
+        completed=getattr(todo, "completed"),
+        due_date=str(getattr(todo, "due_date"))
     ).dict())
 
 @todos_api.delete('/<int:todo_id>')
